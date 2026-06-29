@@ -47,8 +47,4 @@ To turn mathematical probability curves into intuitive management decisions, the
 * **Backend:** Python, Flask API
 * **Data Science Suite:** Scikit-Learn, Pandas, NumPy
 
-### Quick Start
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/your-username/SupplyGuard.git](https://github.com/your-username/SupplyGuard.git)
-   cd SupplyGuard
+
