@@ -66,6 +66,7 @@
     font-family: var(--sans); font-size: 0.85rem; font-weight: 500;
     color: var(--muted); text-decoration: none; padding: 0.5rem 1rem;
     border-radius: 6px; transition: all 0.15s;
+    cursor: pointer;
   }
   .nav-links a:hover { color: var(--ink); background: var(--surface2); }
   .nav-links a.active { color: var(--teal); background: var(--teal-soft); }
@@ -204,7 +205,7 @@
   .risk-low  { background: var(--safe-soft); color: var(--safe); }
   .risk-low::before { background: var(--safe); }
 
-  /* signature: horizontal risk meter */
+  /* horizontal risk meter */
   .meter-wrap { display: flex; align-items: center; gap: 0.7rem; min-width: 130px; }
   .meter {
     flex: 1; height: 8px; border-radius: 4px; background: var(--surface2);
@@ -231,18 +232,22 @@
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.4rem; }
   .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-  .form-group.full { grid-column: 1 / -1; }
-  label {
-    font-size: 0.78rem; font-weight: 600; color: var(--ink);
-  }
+  label { font-size: 0.78rem; font-weight: 600; color: var(--ink); }
   .hint { font-size: 0.7rem; color: var(--muted); font-weight: 400; }
+  .field-note { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; font-style: italic; }
+  
   input, select {
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
     color: var(--ink); font-family: var(--sans); font-size: 0.88rem;
     padding: 0.65rem 0.85rem; outline: none; transition: border-color 0.15s; width: 100%;
   }
   input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
-  input::placeholder { color: #b8b3a6; }
+  
+  input:invalid, input.input-error, select.input-error {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px var(--danger-soft) !important;
+  }
+  input.input-ok, select.input-ok { border-color: var(--safe) !important; }
 
   .result-card {
     background: var(--surface); border: 1px solid var(--border);
@@ -253,6 +258,7 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: 420px; gap: 1.1rem; text-align: center;
   }
+  .result-empty.hidden { display: none; }
   .result-empty .icon {
     width: 56px; height: 56px; border-radius: 50%;
     background: var(--surface2); display: flex; align-items: center; justify-content: center;
@@ -262,33 +268,22 @@
 
   .result-content { display: none; }
   .result-content.visible { display: block; }
-  .result-empty.hidden { display: none; }
 
-  .big-score {
-    text-align: center; padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .score-readout {
-    display: flex; align-items: baseline; justify-content: center; gap: 0.4rem;
-    margin-bottom: 0.6rem;
-  }
+  .big-score { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .score-readout { display: flex; align-items: baseline; justify-content: center; gap: 0.4rem; margin-bottom: 0.6rem; }
   .score-readout .num { font-family: var(--display); font-size: 3.4rem; font-weight: 700; line-height: 1; }
   .score-readout .denom { font-family: var(--mono); font-size: 1.1rem; color: var(--muted); }
   
-  /* Severity block */
-  .severity-display {
-    margin-top: 0.75rem; font-family: var(--mono); font-size: 0.82rem; font-weight: 600;
-    padding: 0.5rem; border-radius: 6px; text-align: center;
-  }
+  .severity-display { margin-top: 0.75rem; font-family: var(--mono); font-size: 0.82rem; font-weight: 600; padding: 0.5rem; border-radius: 6px; text-align: center; }
   .severity-active { background: var(--danger-soft); color: var(--danger); border: 1px dashed var(--danger); }
   .severity-inactive { background: var(--safe-soft); color: var(--safe); border: 1px solid var(--border); }
 
-  .big-meter {
-    height: 10px; border-radius: 5px; background: var(--surface2);
-    border: 1px solid var(--border); overflow: hidden; margin: 0 auto 1rem;
-    max-width: 320px; position: relative;
-  }
+  .big-meter { height: 10px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); overflow: hidden; margin: 0 auto 1rem; max-width: 320px; position: relative; }
   .big-meter-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+
+  .input-summary-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.18rem 0; }
+  .input-summary-row .isk { color: var(--muted); }
+  .input-summary-row .isv { font-family: var(--mono); font-weight: 600; color: var(--ink); }
 
   .factor-list { display: flex; flex-direction: column; gap: 0.9rem; }
   .factor-row { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -300,36 +295,21 @@
 
   /* ── HOW IT WORKS ── */
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
-  .step-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1.6rem;
-  }
-  .step-eyebrow {
-    font-family: var(--mono); font-size: 0.7rem; color: var(--teal);
-    letter-spacing: 0.08em; margin-bottom: 0.9rem; font-weight: 500;
-  }
+  .step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem; }
+  .step-eyebrow { font-family: var(--mono); font-size: 0.7rem; color: var(--teal); letter-spacing: 0.08em; margin-bottom: 0.9rem; font-weight: 500; }
   .step-card h4 { font-family: var(--display); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
   .step-card p { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
 
   /* ── ABOUT PAGE ── */
   .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  .about-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1.7rem;
-  }
+  .about-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.7rem; }
   .about-card h3 { font-family: var(--display); font-size: 1.05rem; font-weight: 700; margin-bottom: 1.1rem; }
   .tech-list { display: flex; flex-direction: column; gap: 0; }
-  .tech-item {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 0.86rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border);
-  }
+  .tech-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.86rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
   .tech-item:last-child { border-bottom: none; }
   .tech-item .k { color: var(--muted); }
   .tech-item .v { font-weight: 600; }
-  .tech-tag {
-    font-family: var(--mono); font-size: 0.7rem; font-weight: 500; padding: 0.22rem 0.65rem;
-    border-radius: 5px; background: var(--teal-soft); color: var(--teal);
-  }
+  .tech-tag { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; padding: 0.22rem 0.65rem; border-radius: 5px; background: var(--teal-soft); color: var(--teal); }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
@@ -351,10 +331,10 @@
     SupplyGuard
   </div>
   <div class="nav-links">
-    <a href="#" class="active" onclick="showPage('dashboard',this)">Dashboard</a>
-    <a href="#" onclick="showPage('checker',this)">Risk Checker</a>
-    <a href="#" onclick="showPage('howitworks',this)">How It Works</a>
-    <a href="#" onclick="showPage('about',this)">About</a>
+    <a class="active" onclick="showPage('dashboard',this)">Dashboard</a>
+    <a onclick="showPage('checker',this)">Risk Checker</a>
+    <a onclick="showPage('howitworks',this)">How It Works</a>
+    <a onclick="showPage('about',this)">About</a>
   </div>
   <div class="status-pill">Model Active</div>
 </nav>
@@ -378,7 +358,7 @@
       <div class="hero-stat-grid">
         <div class="hero-stat danger">
           <div class="num">3</div>
-          <div class="lbl">High risk (≥45%)</div>
+          <div class="lbl">High risk (&ge;65%)</div>
         </div>
         <div class="hero-stat warn">
           <div class="num">2</div>
@@ -389,7 +369,7 @@
           <div class="lbl">Stable</div>
         </div>
         <div class="hero-stat">
-          <div class="num">94.2%</div>
+          <div class="num">95.0%</div>
           <div class="lbl">Model accuracy</div>
         </div>
       </div>
@@ -420,7 +400,6 @@
   </div>
 </div>
 
-<!-- ══════════════ RISK CHECKER ══════════════ -->
 <div id="checker" class="page">
   <div class="section">
     <div class="section-eyebrow">Single Supplier Lookup</div>
@@ -432,62 +411,37 @@
         <p>Enter the supplier's operational parameters. KG Score and Emergency Score are decimal values between 0 and 1. All risk flags are binary — select 0 (inactive) or 1 (active).</p>
 
         <div class="form-grid">
-
-          <!-- Supplier Name — text, no restriction needed -->
           <div class="form-group">
             <label>Supplier Name</label>
-            <input
-              type="text"
-              id="f_name"
-              placeholder="e.g. Apex Textiles"
-              autocomplete="off"
-            >
+            <input type="text" id="f_name" placeholder="e.g. Apex Textiles" autocomplete="off">
           </div>
 
-          <!-- KG Score — float, 0.0 to 1.5 -->
           <div class="form-group">
-            <label>
-              KG Score
-              <span class="hint"> — Numerical · 0.00 to 1.50</span>
-            </label>
-            <input
-              type="number"
-              id="f_kg"
-              placeholder="e.g. 0.65"
-              min="0.00"
-              max="1.50"
-              step="0.01"
-              oninput="clampValue(this, 0, 1.5)"
-              required
-            >
+            <label>Supplier Category</label>
+            <select id="f_category">
+              <option value="">Select category</option>
+              <option value="Fabric">Fabric</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Chemicals">Chemicals</option>
+              <option value="Raw Materials">Raw Materials</option>
+              <option value="Logistics">Logistics</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>KG Score <span class="hint"> — Numerical · 0.00 to 1.50</span></label>
+            <input type="number" id="f_kg" placeholder="e.g. 0.65" min="0.00" max="1.50" step="0.01" oninput="clampValue(this, 0, 1.5)">
             <span class="field-note">Enter a decimal value between 0.00 and 1.50</span>
           </div>
 
-          <!-- Emergency Score — float, 0.0 to 1.0 -->
           <div class="form-group">
-            <label>
-              Emergency Score
-              <span class="hint"> — Numerical · 0.00 to 1.00</span>
-            </label>
-            <input
-              type="number"
-              id="f_em"
-              placeholder="e.g. 0.40"
-              min="0.00"
-              max="1.00"
-              step="0.01"
-              oninput="clampValue(this, 0, 1.0)"
-              required
-            >
+            <label>Emergency Score <span class="hint"> — Numerical · 0.00 to 1.00</span></label>
+            <input type="number" id="f_em" placeholder="e.g. 0.40" min="0.00" max="1.00" step="0.01" oninput="clampValue(this, 0, 1.0)">
             <span class="field-note">Enter a decimal value between 0.00 and 1.00</span>
           </div>
 
-          <!-- Twitter Alert — binary dropdown -->
           <div class="form-group">
-            <label>
-              Twitter Alert
-              <span class="hint"> — Categorical · 0 or 1</span>
-            </label>
+            <label>Twitter Alert <span class="hint"> — Categorical · 0 or 1</span></label>
             <select id="f_twitter">
               <option value="0">0 — No Alert</option>
               <option value="1">1 — Alert Active</option>
@@ -495,12 +449,8 @@
             <span class="field-note">Binary flag — active social media disruption signal</span>
           </div>
 
-          <!-- Weather Risk — binary dropdown -->
           <div class="form-group">
-            <label>
-              Weather Risk
-              <span class="hint"> — Categorical · 0 or 1</span>
-            </label>
+            <label>Weather Risk <span class="hint"> — Categorical · 0 or 1</span></label>
             <select id="f_weather">
               <option value="0">0 — No Risk</option>
               <option value="1">1 — Risk Present</option>
@@ -508,12 +458,8 @@
             <span class="field-note">Binary flag — weather disruption near supplier</span>
           </div>
 
-          <!-- Economic Risk — binary dropdown -->
           <div class="form-group">
-            <label>
-              Economic Risk
-              <span class="hint"> — Categorical · 0 or 1</span>
-            </label>
+            <label>Economic Risk <span class="hint"> — Categorical · 0 or 1</span></label>
             <select id="f_economic">
               <option value="0">0 — No Risk</option>
               <option value="1">1 — Risk Present</option>
@@ -521,12 +467,8 @@
             <span class="field-note">Binary flag — economic instability signal</span>
           </div>
 
-          <!-- Geo Risk — binary dropdown -->
           <div class="form-group">
-            <label>
-              Geo-Political Risk
-              <span class="hint"> — Categorical · 0 or 1</span>
-            </label>
+            <label>Geo-Political Risk <span class="hint"> — Categorical · 0 or 1</span></label>
             <select id="f_geo">
               <option value="0">0 — No Risk</option>
               <option value="1">1 — Risk Present</option>
@@ -534,48 +476,25 @@
             <span class="field-note">Binary flag — political/regional instability</span>
           </div>
 
-          <!-- Tech Risk — binary dropdown -->
-          <div class="form-group">
-            <label>
-              Technical Risk
-              <span class="hint"> — Categorical · 0 or 1</span>
-            </label>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label>Technical Risk <span class="hint"> — Categorical · 0 or 1</span></label>
             <select id="f_tech">
               <option value="0">0 — No Risk</option>
               <option value="1">1 — Risk Present</option>
             </select>
             <span class="field-note">Binary flag — tech/infrastructure failure signal</span>
           </div>
-
         </div>
 
-        <!-- Validation message area -->
-        <div id="formError" style="
-          display:none;
-          background:#f7e9e5;
-          border:1px solid #e8b4a8;
-          border-radius:8px;
-          padding:0.75rem 1rem;
-          margin-bottom:1rem;
-          font-size:0.83rem;
-          color:#b3432d;
-        "></div>
+        <div id="formError" style="display:none; background:#f7e9e5; border:1px solid #e8b4a8; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.83rem; color:#b3432d;"></div>
 
-        <button
-          class="btn btn-primary"
-          id="analyzeBtn"
-          style="width:100%;justify-content:center"
-          onclick="runCheck()"
-        >
-          Analyze Risk →
-        </button>
+        <button class="btn btn-primary" id="analyzeBtn" style="width:100%; justify-content:center" onclick="runCheck()">Analyze Risk →</button>
       </div>
 
-      <!-- Result Panel -->
       <div class="result-card">
         <div class="result-empty" id="resultEmpty">
           <div class="icon">○</div>
-          <p>Fill in the supplier details and click <strong>Analyze Risk</strong> to run the two-stage prediction — disruption classification followed by severity estimation.</p>
+          <p>Fill in the supplier details and click <strong>Analyze Risk</strong> to run the classification model with validation checks.</p>
         </div>
 
         <div class="result-content" id="resultContent">
@@ -588,46 +507,30 @@
               <div class="big-meter-fill" id="bigMeterFill" style="width:0%"></div>
             </div>
             <div id="riskBadgeResult"></div>
-
             <div id="downtimeBlock" class="severity-display">
               Expected Impact: <span id="downtimeVal">0.0</span> Hours
             </div>
-
-            <p style="font-size:0.83rem;color:var(--muted);margin-top:0.9rem;line-height:1.6" id="riskMsg"></p>
+            <p style="font-size:0.83rem; color:var(--muted); margin-top:0.9rem; line-height:1.6" id="riskMsg"></p>
           </div>
 
-          <!-- Input Summary — shows what was submitted -->
-          <div id="inputSummary" style="
-            background:var(--surface2);
-            border:1px solid var(--border);
-            border-radius:10px;
-            padding:1rem 1.2rem;
-            margin-bottom:0.5rem;
-          ">
-            <p style="font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;
-                      text-transform:uppercase;color:var(--muted);margin-bottom:0.7rem;font-weight:500">
-              Submitted Values
+          <div id="backupSection" style="display:none;">
+            <p style="font-family:var(--mono); font-size:0.7rem; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; margin-bottom:1rem; font-weight:500; margin-top:1.5rem">
+              Suggested Backup Suppliers
             </p>
-            <div id="inputSummaryContent" style="
-              display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1.5rem;
-            "></div>
+            <div id="backupList"></div>
           </div>
 
-          <div>
-            <p style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.08em;
-                      color:var(--muted);text-transform:uppercase;margin-bottom:1rem;font-weight:500">
-              Structural Factor Contribution
-            </p>
+          <div id="inputSummary" style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:1rem 1.2rem; margin-bottom:0.5rem; margin-top:1rem;">
+            <p style="font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.7rem; font-weight:500">Submitted Values</p>
+            <div id="inputSummaryContent" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 1.5rem;"></div>
+          </div>
+
+          <div style="margin-top:1rem; margin-bottom:1.5rem;">
+            <p style="font-family:var(--mono); font-size:0.7rem; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; margin-bottom:1rem; font-weight:500">Structural Factor Contribution</p>
             <div class="factor-list" id="factorList"></div>
           </div>
 
-          <button
-            class="btn btn-ghost"
-            style="width:100%;justify-content:center"
-            onclick="resetCheck()"
-          >
-            ← Check Another Supplier
-          </button>
+          <button class="btn btn-ghost" style="width:100%; justify-content:center" onclick="resetCheck()">← Check Another Supplier</button>
         </div>
       </div>
 
@@ -635,41 +538,124 @@
   </div>
 </div>
 
+<div id="howitworks" class="page">
+  <div class="section">
+    <div class="section-eyebrow">Architecture</div>
+    <div class="section-heading">How SupplyGuard Processes Risk</div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-eyebrow">01 / Data Ingestion</div>
+        <h4>Parameter Capture</h4>
+        <p>Gathers risk metrics from operations, social updates, and localized weather models into standard formats.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-eyebrow">02 / Classification</div>
+        <h4>Risk Assessment</h4>
+        <p>A trained pipeline filters upstream conditions to determine localized probability boundaries.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-eyebrow">03 / Severity Logic</div>
+        <h4>Impact Window</h4>
+        <p>Calculates anticipated latency shifts and downstream routing effects when critical triggers exceed safety metrics.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-eyebrow">04 / Mitigation</div>
+        <h4>Fallback Sourcing</h4>
+        <p>High-risk triggers query operational mapping models to fetch localized alternative backup options instantly.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- ══════════════ STYLES FOR THIS FORM ══════════════ -->
-<style>
-  .field-note {
-    font-size: 0.68rem;
-    color: var(--muted);
-    margin-top: 0.2rem;
-    font-style: italic;
-  }
-  input:invalid, input.input-error {
-    border-color: var(--danger) !important;
-    box-shadow: 0 0 0 3px var(--danger-soft) !important;
-  }
-  input.input-ok {
-    border-color: var(--safe) !important;
-  }
-  .input-summary-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.78rem;
-    padding: 0.18rem 0;
-  }
-  .input-summary-row .isk { color: var(--muted); }
-  .input-summary-row .isv {
-    font-family: var(--mono);
-    font-weight: 600;
-    color: var(--ink);
-  }
-</style>
+<div id="about" class="page">
+  <div class="section">
+    <div class="section-eyebrow">Specifications</div>
+    <div class="section-heading">System Performance & Environment</div>
+    <div class="about-grid">
+      <div class="about-card">
+        <h3>Model Environment</h3>
+        <div class="tech-list">
+          <div class="tech-item"><span class="k">Classifier Architecture</span><span class="v">Logistic Regression</span></div>
+          <div class="tech-item"><span class="k">Accuracy</span><span class="v">95.00%</span></div>
+          <div class="tech-item"><span class="k">Precision</span><span class="v">97.30%</span></div>
+          <div class="tech-item"><span class="k">Recall</span><span class="v">94.74%</span></div>
+          <div class="tech-item"><span class="k">F1 Score</span><span class="v">0.9600</span></div>
+          <div class="tech-item"><span class="k">ROC-AUC Engine</span><span class="v">0.9913</span></div>
+          <div class="tech-item"><span class="k">PR-AUC Engine</span><span class="v">0.9951</span></div>
+          <div class="tech-item"><span class="k">Test Set Volume</span><span class="v">120 samples</span></div>
+          <div class="tech-item"><span class="k">Train Set Volume</span><span class="v">480 samples</span></div>
+        </div>
+      </div>
+      <div class="about-card">
+        <h3>Tech Stack Deployment</h3>
+        <div class="tech-list" style="gap: 0.5rem; flex-direction: row; flex-wrap: wrap; margin-top: 0.5rem; border:none;">
+          <span class="tech-tag">Flask Python</span>
+          <span class="tech-tag">Scikit-Learn</span>
+          <span class="tech-tag">Pandas Engine</span>
+          <span class="tech-tag">Vanilla JS Core</span>
+          <span class="tech-tag">CSS Grid System</span>
+        </div>
+        
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Confusion Matrix (Test Data)</h3>
+        <div class="tech-list">
+          <div class="tech-item"><span class="k">True Positives (TP)</span><span class="v" style="color:var(--safe)">72</span></div>
+          <div class="tech-item"><span class="k">True Negatives (TN)</span><span class="v" style="color:var(--safe)">42</span></div>
+          <div class="tech-item"><span class="k">False Positives (FP)</span><span class="v" style="color:var(--warn)">2</span></div>
+          <div class="tech-item"><span class="k">False Negatives (FN)</span><span class="v" style="color:var(--danger)">4</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-
-<!-- ══════════════ JAVASCRIPT FOR THIS FORM ══════════════ -->
 <script>
+// Static Layout Data Initialization for Dashboard List
+const mockTableSuppliers = [
+  { name: 'Global Logistics Corp', id: 'SUPP-0041', kg: 0.34, em: 0.12, tw: 0, we: 0, score: 24, label: 'Low Risk', class: 'risk-low' },
+  { name: 'Apex Electronics Node', id: 'SUPP-0098', kg: 0.88, em: 0.99, tw: 1, we: 0, score: 82, label: 'High Risk', class: 'risk-high' },
+  { name: 'Alpha Chemical Labs', id: 'SUPP-0112', kg: 0.62, em: 0.45, tw: 0, we: 1, score: 51, label: 'Medium Risk', class: 'risk-med' },
+  { name: 'Zenith Raw Sourcing', id: 'SUPP-0204', kg: 0.15, em: 0.05, tw: 0, we: 0, score: 12, label: 'Low Risk', class: 'risk-low' },
+  { name: 'Beacon Steel Mills', id: 'SUPP-0185', kg: 0.74, em: 0.81, tw: 0, we: 1, score: 78, label: 'High Risk', class: 'risk-high' }
+];
 
-// ── Clamp helper — prevents out-of-range typing ──────────────
+function initDashboardTable() {
+  const tableBody = document.getElementById('supplierTable');
+  if (!tableBody) return;
+  tableBody.innerHTML = mockTableSuppliers.map(s => `
+    <tr>
+      <td>
+        <div class="supplier-name">${s.name}</div>
+        <div class="supplier-id">${s.id}</div>
+      </td>
+      <td style="font-family:var(--mono);">${s.kg.toFixed(2)}</td>
+      <td style="font-family:var(--mono);">${s.em.toFixed(2)}</td>
+      <td><span class="risk-badge ${s.tw ? 'risk-high' : 'risk-low'}">${s.tw ? 'Active' : 'None'}</span></td>
+      <td><span class="risk-badge ${s.we ? 'risk-med' : 'risk-low'}">${s.we ? 'Risk' : 'Clear'}</span></td>
+      <td>
+        <div class="meter-wrap">
+          <div class="meter">
+            <div class="meter-fill" style="width: ${s.score}%; background: ${s.score >= 70 ? 'var(--danger)' : s.score >= 45 ? 'var(--warn)' : 'var(--safe)'}"></div>
+            <div class="meter-ticks"></div>
+          </div>
+          <span class="meter-num">${s.score}</span>
+        </div>
+      </td>
+      <td><span class="risk-badge ${s.class}">${s.label}</span></td>
+    </tr>
+  `).join('');
+}
+
+// Complete Page Tab Switching Handler
+function showPage(pageId, navElement) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) targetPage.classList.add('active');
+  if (navElement) navElement.classList.add('active');
+}
+
+// Numerical Boundary Enforcer
 function clampValue(input, min, max) {
   const val = parseFloat(input.value);
   if (!isNaN(val)) {
@@ -678,36 +664,30 @@ function clampValue(input, min, max) {
   }
 }
 
-// ── Validate form before submit ───────────────────────────────
+// Input Validator
 function validateForm() {
   const errors = [];
   const errBox = document.getElementById('formError');
+  const kgField = document.getElementById('f_kg');
+  const emField = document.getElementById('f_em');
 
-  const kg  = parseFloat(document.getElementById('f_kg').value);
-  const em  = parseFloat(document.getElementById('f_em').value);
+  const kg = parseFloat(kgField.value);
+  const em = parseFloat(emField.value);
 
-  // KG Score validation
-  if (isNaN(kg)) {
-    errors.push('KG Score is required.');
-    document.getElementById('f_kg').classList.add('input-error');
-  } else if (kg < 0 || kg > 1.5) {
-    errors.push('KG Score must be between 0.00 and 1.50.');
-    document.getElementById('f_kg').classList.add('input-error');
+  if (isNaN(kg) || kg < 0 || kg > 1.5) {
+    errors.push('KG Score must be a valid number between 0.00 and 1.50.');
+    kgField.classList.add('input-error');
   } else {
-    document.getElementById('f_kg').classList.remove('input-error');
-    document.getElementById('f_kg').classList.add('input-ok');
+    kgField.classList.remove('input-error');
+    kgField.classList.add('input-ok');
   }
 
-  // Emergency Score validation
-  if (isNaN(em)) {
-    errors.push('Emergency Score is required.');
-    document.getElementById('f_em').classList.add('input-error');
-  } else if (em < 0 || em > 1.0) {
-    errors.push('Emergency Score must be between 0.00 and 1.00.');
-    document.getElementById('f_em').classList.add('input-error');
+  if (isNaN(em) || em < 0 || em > 1.0) {
+    errors.push('Emergency Score must be a valid number between 0.00 and 1.00.');
+    emField.classList.add('input-error');
   } else {
-    document.getElementById('f_em').classList.remove('input-error');
-    document.getElementById('f_em').classList.add('input-ok');
+    emField.classList.remove('input-error');
+    emField.classList.add('input-ok');
   }
 
   if (errors.length > 0) {
@@ -715,457 +695,166 @@ function validateForm() {
     errBox.innerHTML = errors.map(e => `⚠️ ${e}`).join('<br>');
     return false;
   }
-
   errBox.style.display = 'none';
   return true;
 }
 
-// ── Build input summary panel ─────────────────────────────────
 function buildInputSummary(payload) {
   const labels = {
-    kg_score      : 'KG Score',
-    Em_Score      : 'Emergency Score',
-    twitter_alert : 'Twitter Alert',
-    weather_risk  : 'Weather Risk',
-    economic_risk : 'Economic Risk',
-    geo_risk      : 'Geo Risk',
-    tech_risk     : 'Tech Risk'
+    supplier_name: 'Supplier Name', category: 'Category', kg_score: 'KG Score',
+    Em_Score: 'Emergency Score', twitter_alert: 'Twitter Alert', weather_risk: 'Weather Risk',
+    economic_risk: 'Economic Risk', geo_risk: 'Geo Risk', tech_risk: 'Tech Risk'
   };
   return Object.entries(payload).map(([k, v]) => `
     <div class="input-summary-row">
       <span class="isk">${labels[k] || k}</span>
-      <span class="isv">${v}</span>
+      <span class="isv">${v === "" ? 'None' : v}</span>
     </div>
   `).join('');
 }
 
-// ── Main runCheck function ────────────────────────────────────
+// Prediction Sourced Execution Pipeline
 async function runCheck() {
   if (!validateForm()) return;
 
-  const kg       = parseFloat(document.getElementById('f_kg').value);
-  const em       = parseFloat(document.getElementById('f_em').value);
-  const twitter  = parseInt(document.getElementById('f_twitter').value);
-  const weather  = parseInt(document.getElementById('f_weather').value);
+  const kg = parseFloat(document.getElementById('f_kg').value);
+  const em = parseFloat(document.getElementById('f_em').value);
+  const twitter = parseInt(document.getElementById('f_twitter').value);
+  const weather = parseInt(document.getElementById('f_weather').value);
   const economic = parseInt(document.getElementById('f_economic').value);
-  const geo      = parseInt(document.getElementById('f_geo').value);
-  const tech     = parseInt(document.getElementById('f_tech').value);
+  const geo = parseInt(document.getElementById('f_geo').value);
+  const tech = parseInt(document.getElementById('f_tech').value);
+  const name = document.getElementById('f_name').value.trim ? document.getElementById('f_name').value.trim() : document.getElementById('f_name').value;
+  const category = document.getElementById('f_category').value;
 
   const btn = document.getElementById('analyzeBtn');
   btn.textContent = 'Analyzing...';
   btn.disabled = true;
 
   const payload = {
-    kg_score      : kg,
-    Em_Score      : em,
-    twitter_alert : twitter,
-    weather_risk  : weather,
-    economic_risk : economic,
-    geo_risk      : geo,
-    tech_risk     : tech
+    kg_score: kg, Em_Score: em, twitter_alert: twitter, weather_risk: weather,
+    economic_risk: economic, geo_risk: geo, tech_risk: tech, supplier_name: name, category: category
   };
 
   try {
     const response = await fetch('/predict', {
-      method : 'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify(payload)
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) throw new Error('Server error ' + response.status);
     const result = await response.json();
-    if (result.error) throw new Error(result.error);
-
-    displayResult(
-      result.risk_score,
-      result.prediction,
-      result.factors,
-      result.predicted_downtime_hours,
-      payload
-    );
+    displayResult(result, payload);
 
   } catch (err) {
-    // Fallback simulation when Flask is not running
-    const simScore   = simulateScore(kg, em, twitter, weather, economic, geo, tech);
-    const simLevel   = simScore >= 70 ? 'High Risk' : simScore >= 45 ? 'Medium Risk' : 'Low Risk';
-    const simFactors = [
-      { feature:'KG Score',        importance: 40.45 },
-      { feature:'Emergency Score', importance: 35.12 },
-      { feature:'Twitter Alert',   importance: 12.30 },
-      { feature:'Weather Risk',    importance:  5.10 },
-      { feature:'Economic Risk',   importance:  4.00 },
-      { feature:'Geo Risk',        importance:  2.00 },
-      { feature:'Tech Risk',       importance:  1.03 },
-    ];
-    const simDowntime = simScore >= 70 ? parseFloat((simScore / 10).toFixed(1)) : 0.0;
-    displayResult(simScore, simLevel, simFactors, simDowntime, payload);
+    console.warn("Using simulation fallback loop.", err);
+    const simScore = Math.round(Math.min((kg * 50) + (em * 35) + ((twitter + weather + economic + geo + tech) * 3), 100));
+    const simLevel = simScore >= 70 ? 'High Risk' : simScore >= 45 ? 'Medium Risk' : 'Low Risk';
+    
+    const mockBackups = simScore >= 45 ? [
+      { supplier_name: 'Simulated Backup Ltd', region: 'Alternative Node', lead_time_days: 5, quality_rating: '4.7', price_level: 'Medium' }
+    ] : [];
+
+    displayResult({
+      risk_score: simScore,
+      prediction: simLevel,
+      factors: [
+        { feature: 'KG Score Component', importance: 50.00 },
+        { feature: 'Emergency Component', importance: 30.00 },
+        { feature: 'Social Feed Signals', importance: 10.00 },
+        { feature: 'Localized Risks', importance: 10.00 }
+      ],
+      predicted_downtime_hours: simScore >= 45 ? parseFloat((simScore / 10).toFixed(1)) : 0.0,
+      backup_suppliers: mockBackups
+    }, payload);
   } finally {
     btn.textContent = 'Analyze Risk →';
     btn.disabled = false;
   }
 }
 
-// ── Simulation fallback (when Flask offline) ──────────────────
-function simulateScore(kg, em, twitter, weather, economic, geo, tech) {
-  let s = 0;
-  s += kg * 55;
-  s += em * 30;
-  s += (twitter + weather + economic + geo + tech) * 2;
-  return Math.round(Math.min(s, 100));
-}
+function displayResult(result, payload) {
+  const score = result.risk_score;
+  const riskLevel = result.prediction;
+  const factors = result.factors;
+  const downtime = result.predicted_downtime_hours;
 
-// ── Display result on the right panel ────────────────────────
-function displayResult(score, riskLevel, factors, downtime, payload) {
-  function rawColor(s) {
-    if (s >= 70) return '#b3432d';
-    if (s >= 45) return '#c4801a';
-    return '#1f7a4d';
-  }
+  const color = score >= 70 ? '#b3432d' : score >= 45 ? '#c4801a' : '#1f7a4d';
 
-  const color = rawColor(score);
+  document.getElementById('resultEmpty').classList.add('hidden');
+  document.getElementById('resultContent').classList.add('visible');
 
-  document.getElementById('scoreVal').textContent  = score;
-  document.getElementById('scoreVal').style.color  = color;
-  document.getElementById('bigMeterFill').style.width      = score + '%';
+  document.getElementById('scoreVal').textContent = score;
+  document.getElementById('scoreVal').style.color = color;
+  document.getElementById('bigMeterFill').style.width = score + '%';
   document.getElementById('bigMeterFill').style.background = color;
 
-  let riskClass, msg;
-  if (score >= 70) {
-    riskClass = 'risk-high';
-    msg = 'Elevated threats confirmed. Initialize fallback routing options instantly.';
-  } else if (score >= 45) {
-    riskClass = 'risk-med';
-    msg = 'Risk signals detected. Monitor closely and prepare contingency sourcing.';
-  } else {
-    riskClass = 'risk-low';
-    msg = 'Supplier appears stable. Continue standard monitoring cadence.';
-  }
+  let riskClass = score >= 70 ? 'risk-high' : score >= 45 ? 'risk-med' : 'risk-low';
+  let msg = score >= 70 ? 'Elevated threats confirmed. Initialize fallback routing options instantly.' : score >= 45 ? 'Risk signals detected. Monitor closely and prepare contingency sourcing.' : 'Supplier appears stable. Continue standard monitoring cadence.';
 
-  document.getElementById('riskBadgeResult').innerHTML =
-    `<span class="risk-badge ${riskClass}" style="display:inline-flex">${riskLevel}</span>`;
+  document.getElementById('riskBadgeResult').innerHTML = `<span class="risk-badge ${riskClass}">${riskLevel}</span>`;
   document.getElementById('riskMsg').textContent = msg;
 
-  // Downtime display
   const dtBlock = document.getElementById('downtimeBlock');
-  if (downtime > 0) {
-    document.getElementById('downtimeVal').textContent = downtime;
-    dtBlock.style.display = 'block';
+  document.getElementById('downtimeVal').textContent = downtime.toFixed(1);
+  dtBlock.className = downtime > 0 ? "severity-display severity-active" : "severity-display severity-inactive";
+
+  const backupSection = document.getElementById('backupSection');
+  const backupList = document.getElementById('backupList');
+  const fallbackSuppliers = result.backup_suppliers || result.backupSuppliers;
+
+  if (fallbackSuppliers && fallbackSuppliers.length > 0) {
+    backupSection.style.display = 'block';
+    backupList.innerHTML = fallbackSuppliers.map(s => `
+      <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.2rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight:600; font-size:0.9rem">${s.supplier_name || s.name || 'Alternative Vendor'}</div>
+          <div style="font-size:0.78rem; color:var(--muted); margin-top:0.2rem">${s.region || 'Alternative Node'} · Lead time: ${s.lead_time_days || 3} days</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--mono); font-size:0.75rem; font-weight:600; color:var(--safe)">⭐ ${s.quality_rating || '4.5'}</div>
+          <div style="font-size:0.72rem; color:var(--muted)">${s.price_level || 'Medium'} price</div>
+        </div>
+      </div>
+    `).join('');
   } else {
-    dtBlock.style.display = 'none';
+    backupSection.style.display = 'none';
   }
 
-  // Input summary
-  document.getElementById('inputSummaryContent').innerHTML =
-    buildInputSummary(payload);
+  document.getElementById('inputSummaryContent').innerHTML = buildInputSummary(payload);
 
-  // Factor bars
   const maxImp = Math.max(...factors.map(f => f.importance));
   document.getElementById('factorList').innerHTML = factors.map(f => {
     const barPct = maxImp > 0 ? Math.round((f.importance / maxImp) * 100) : 0;
     return `
       <div class="factor-row">
-        <div class="factor-label">
-          <span class="name">${f.feature}</span>
-          <span class="pct">${f.importance.toFixed(2)}%</span>
-        </div>
-        <div class="factor-bar">
-          <div class="factor-fill" style="width:${barPct}%"></div>
-        </div>
-      </div>`;
+        <div class="factor-label"><span class="name">${f.feature}</span><span class="pct">${f.importance.toFixed(2)}%</span></div>
+        <div class="factor-bar"><div class="factor-fill" style="width: ${barPct}%"></div></div>
+      </div>
+    `;
   }).join('');
-
-  document.getElementById('resultEmpty').classList.add('hidden');
-  document.getElementById('resultContent').classList.add('visible');
-}
-
-// ── Reset form ────────────────────────────────────────────────
-function resetCheck() {
-  // Clear text and number inputs
-  ['f_name', 'f_kg', 'f_em'].forEach(id => {
-    const el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('input-error', 'input-ok');
-  });
-
-  // Reset dropdowns to first option (0)
-  ['f_twitter', 'f_weather', 'f_economic', 'f_geo', 'f_tech'].forEach(id => {
-    document.getElementById(id).selectedIndex = 0;
-  });
-
-  // Hide error box
-  document.getElementById('formError').style.display = 'none';
-
-  // Reset result panel
-  document.getElementById('resultEmpty').classList.remove('hidden');
-  document.getElementById('resultContent').classList.remove('visible');
-}
-
-</script>
-<div id="howitworks" class="page">
-  <div class="section">
-    <div class="section-eyebrow">Methodology</div>
-    <div class="section-heading">How SupplyGuard Works</div>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-eyebrow">Data In</div>
-        <h4>Historical Logs</h4>
-        <p>Supplier logs capturing quality configurations, external shocks, and structural risk dimensions are vectorized cleanly into the pipeline.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-eyebrow">Analysis</div>
-        <h4>Feature Balancing</h4>
-        <p>SMOTE processing handles minor variant vectors across structural risk instances, establishing clean evaluation boundaries.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-eyebrow">Training</div>
-        <h4>Ensemble Sorting</h4>
-        <p>Four structural variants are optimized over grid search topologies, validating specific risk capabilities across testing partitions.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-eyebrow">Scoring</div>
-        <h4>Two-Stage Execution</h4>
-        <p>An XGBoost Classifier maps out probability vectors via a 45.0% split, seamlessly feeding flagged instances into the XGBoost Severity Engine.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-eyebrow">Explainability</div>
-        <h4>SHAP Attribution</h4>
-        <p>KernelExplainer instances track localized weights, highlighting exactly which metric combinations skewed risk profiles upwards.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-eyebrow">Action</div>
-        <h4>Early Sourcing</h4>
-        <p>Vulnerable nodes show immediate severity profiles, giving engineering teams structural buffer capacity before downstream production runs lock.</p>
-      </div>
-    </div>
-
-    <div style="margin-top:2.5rem">
-      <div class="section-eyebrow">Model Comparison</div>
-      <div class="section-heading">Four Models, One Selected</div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Model</th><th>Approach</th><th>Strength</th><th>Test Accuracy</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><strong>Logistic Regression</strong></td><td>Statistical baseline</td><td>Simple, fast, explainable</td><td><span style="font-family:var(--mono);font-weight:600">95.0%</span></td></tr>
-            <tr><td><strong>Decision Tree</strong></td><td>Rule-based flowchart</td><td>Visual, easy to interpret</td><td><span style="font-family:var(--mono);font-weight:600">93.3%</span></td></tr>
-            <tr><td><strong>Random Forest</strong></td><td>Bagging Ensemble Architecture</td><td>Stable feature profiles</td><td><span style="font-family:var(--mono);font-weight:600">91.7%</span></td></tr>
-            <tr><td><strong>XGBoost ✓</strong></td><td>Gradient Boosting Engine</td><td>Highest cross-validated robustness</td><td><span style="font-family:var(--mono);font-weight:600;color:var(--teal)">94.2%</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="about" class="page">
-  <div class="section">
-    <div class="section-eyebrow">Project Info</div>
-    <div class="section-heading">About This Project</div>
-    <div class="about-grid">
-      <div class="about-card">
-        <h3>Summary</h3>
-        <p style="font-size:0.87rem;color:var(--muted);line-height:1.75">SupplyGuard deploys a two-stage machine learning system optimized over gradient boosted ensembles. Stage 1 executes an XGBoost Classifier targeted at a strict 45.0% decision threshold to secure elevated operational recall. Stage 2 triggers an isolated XGBoost Severity Regressor to compute down-stream downtime consequences without injecting data leaks into the classifier loop.</p>
-      </div>
-      <div class="about-card">
-        <h3>Technology Stack</h3>
-        <div class="tech-list">
-          <div class="tech-item"><span class="k">Language</span> <span class="tech-tag">Python 3.x</span></div>
-          <div class="tech-item"><span class="k">IDE</span> <span class="tech-tag">VS Code</span></div>
-          <div class="tech-item"><span class="k">Data Processing</span> <span class="tech-tag">Pandas + NumPy</span></div>
-          <div class="tech-item"><span class="k">Visualization</span> <span class="tech-tag">Matplotlib + Seaborn</span></div>
-          <div class="tech-item"><span class="k">ML Models</span> <span class="tech-tag">Scikit-learn + XGBoost</span></div>
-          <div class="tech-item"><span class="k">Best Model</span> <span class="tech-tag">XGBoost Classifier + Regressor</span></div>
-          <div class="tech-item"><span class="k">Explainability</span> <span class="tech-tag">SHAP (KernelExplainer)</span></div>
-          <div class="tech-item"><span class="k">Backend</span> <span class="tech-tag">Flask</span></div>
-        </div>
-      </div>
-      <div class="about-card">
-        <h3>Model Performance (XGBoost)</h3>
-        <div class="tech-list">
-          <div class="tech-item"><span class="k">Accuracy</span> <span class="v">94.2%</span></div>
-          <div class="tech-item"><span class="k">Precision</span> <span class="v">98.0%</span></div>
-          <div class="tech-item"><span class="k">Recall</span> <span class="v">95.2%</span></div>
-          <div class="tech-item"><span class="k">F1 Score</span> <span class="v">0.9659</span></div>
-          <div class="tech-item"><span class="k">ROC-AUC</span> <span class="v">0.9718</span></div>
-        </div>
-      </div>
-      <div class="about-card">
-        <h3>Top Risk Factors (Global SHAP Importance)</h3>
-        <div style="display:flex;flex-direction:column;gap:1rem;margin-top:0.4rem">
-          <div class="factor-row">
-            <div class="factor-label"><span class="name">KG Score</span><span class="pct">0.1766</span></div>
-            <div class="factor-bar"><div class="factor-fill" style="width:100%"></div></div>
-          </div>
-          <div class="factor-row">
-            <div class="factor-label"><span class="name">Emergency Score</span><span class="pct">0.1729</span></div>
-            <div class="factor-bar"><div class="factor-fill" style="width:98%"></div></div>
-          </div>
-          <div class="factor-row">
-            <div class="factor-label"><span class="name">Twitter Alert</span><span class="pct">0.0252</span></div>
-            <div class="factor-bar"><div class="factor-fill" style="width:14%"></div></div>
-          </div>
-          <div class="factor-row">
-            <div class="factor-label"><span class="name">Weather Risk</span><span class="pct">0.0009</span></div>
-            <div class="factor-bar"><div class="factor-fill" style="width:1%"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── Navigation ──────────────────────────────────────────────────
-function showPage(id, link) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if (link) link.classList.add('active');
-}
-
-// ── Sample Supplier Data ────────────────────────────────────────
-const suppliers = [
-  { name:'Apex Textiles',    id:'SUP-001', kg:72, em:64, twitter:1, weather:4, score:88.4, risk:'high' },
-  { name:'NordParts GmbH',   id:'SUP-002', kg:12, em:15, twitter:0, weather:1, score:12.1, risk:'low'  },
-  { name:'Delta Logistics',  id:'SUP-003', kg:45, em:32, twitter:0, weather:2, score:35.0, risk:'med'  },
-  { name:'SilkRoute Co.',    id:'SUP-004', kg:91, em:55, twitter:1, weather:3, score:91.7, risk:'high' },
-  { name:'BrazosChem',       id:'SUP-005', kg:31, em:28, twitter:0, weather:1, score:26.5, risk:'med'  },
-  { name:'FinTech Supply',   id:'SUP-006', kg:8,  em:12, twitter:0, weather:0, score:8.2,  risk:'low'  },
-  { name:'Gulf Components',  id:'SUP-007', kg:67, em:41, twitter:1, weather:2, score:67.3, risk:'high' },
-  { name:'Pacific Materials',id:'SUP-008', kg:19, em:22, twitter:0, weather:1, score:19.4, risk:'low'  },
-];
-
-function scoreColorRaw(score) {
-  if (score >= 45.0) return '#b3432d'; // High Risk matching custom baseline
-  if (score >= 25.0) return '#c4801a'; // Medium Risk Zone
-  return '#1f7a4d';                    // Stable Low Risk
-}
-
-function buildTable() {
-  const tbody = document.getElementById('supplierTable');
-  tbody.innerHTML = suppliers.map(s => `
-    <tr>
-      <td>
-        <div class="supplier-name">${s.name}</div>
-        <div class="supplier-id">${s.id}</div>
-      </td>
-      <td style="font-family:var(--mono);font-size:0.84rem">${s.kg}</td>
-      <td style="font-family:var(--mono);font-size:0.84rem">${s.em}</td>
-      <td style="font-family:var(--mono);font-size:0.84rem">${s.twitter}</td>
-      <td style="font-family:var(--mono);font-size:0.84rem">${s.weather}</td>
-      <td>
-        <div class="meter-wrap">
-          <div class="meter">
-            <div class="meter-fill" style="width:${s.score}%;background:${scoreColorRaw(s.score)}"></div>
-            <div class="meter-ticks"></div>
-          </div>
-          <span class="meter-num">${s.score}</span>
-        </div>
-      </td>
-      <td><span class="risk-badge risk-${s.risk === 'high' ? 'high' : s.risk === 'med' ? 'med' : 'low'}">${s.risk === 'high' ? 'High' : s.risk === 'med' ? 'Medium' : 'Low'}</span></td>
-    </tr>
-  `).join('');
-}
-buildTable();
-
-// ── Live Risk Checker Pipeline Connection Layer ──────────────────
-function runCheck() {
-  const name     = document.getElementById('f_name').value || 'Unnamed Supplier';
-  const kg       = document.getElementById('f_kg').value;
-  const em       = document.getElementById('f_em').value;
-  const twitter  = document.getElementById('f_twitter').value;
-  const weather  = document.getElementById('f_weather').value;
-  const economic = document.getElementById('f_economic').value;
-  const geo      = document.getElementById('f_geo').value;
-  const tech     = document.getElementById('f_tech').value;
-
-  if (kg === '' || em === '' || weather === '' || economic === '' || geo === '' || tech === '') {
-    alert('Please enter values across all 7 operational criteria features.');
-    return;
-  }
-
-  // Map user object payloads directly to the backend requirements
-  const requestPayload = {
-    kg_score: parseFloat(kg),
-    Em_Score: parseFloat(em),
-    twitter_alert: parseFloat(twitter),
-    weather_risk: parseFloat(weather),
-    economic_risk: parseFloat(economic),
-    geo_risk: parseFloat(geo),
-    tech_risk: parseFloat(tech)
-  };
-
-  // Perform operational async request to running flask instance
-  fetch('/predict', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestPayload)
-  })
-  .then(response => {
-    if (!response.ok) throw new Error('Backend Pipeline Server Unreachable.');
-    return response.json();
-  })
-  .then(data => {
-    const score = data.risk_score;
-    const color = scoreColorRaw(score);
-    
-    let riskClass = 'risk-low';
-    let msg = 'This supplier node tracks securely. Continue routine tracking schedules.';
-    
-    if (data.prediction === 'High Risk') {
-      riskClass = 'risk-high';
-      msg = 'Elevated threats confirmed. Initialize fallback routing options instantly.';
-    } else if (data.prediction === 'Medium Risk') {
-      riskClass = 'risk-med';
-      msg = 'Moderate anomalies noted. Monitor indicators and queue safety inventories.';
-    }
-
-    // Populate Classification Indicators
-    document.getElementById('scoreVal').textContent = score;
-    document.getElementById('scoreVal').style.color = color;
-    document.getElementById('bigMeterFill').style.width = score + '%';
-    document.getElementById('bigMeterFill').style.background = color;
-    document.getElementById('riskBadgeResult').innerHTML = `<span class="risk-badge ${riskClass}" style="display:inline-flex">${data.prediction}</span>`;
-    document.getElementById('riskMsg').textContent = msg;
-
-    // Populate Two-Stage Downtime Results
-    const downtimeElement = document.getElementById('downtimeBlock');
-    document.getElementById('downtimeVal').textContent = data.predicted_downtime_hours.toFixed(1);
-    if (data.is_disruption === 1) {
-      downtimeElement.className = "severity-display severity-active";
-    } else {
-      downtimeElement.className = "severity-display severity-inactive";
-    }
-
-    // Populate SHAP Factor Bars dynamically from Flask arrays
-    document.getElementById('factorList').innerHTML = data.factors.map(f => `
-      <div class="factor-row">
-        <div class="factor-label">
-          <span class="name">${f.feature}</span>
-          <span class="pct">${f.importance.toFixed(2)}%</span>
-        </div>
-        <div class="factor-bar">
-          <div class="factor-fill" style="width:${Math.max(2, Math.min(f.importance, 100))}%"></div>
-        </div>
-      </div>`).join('');
-
-    // Toggle Visibility Cards
-    document.getElementById('resultEmpty').classList.add('hidden');
-    document.getElementById('resultContent').classList.add('visible');
-  })
-  .catch(err => {
-    console.error(err);
-    alert('Pipeline connectivity error. Ensure app.py is active on port 5000.');
-  });
 }
 
 function resetCheck() {
-  document.getElementById('resultEmpty').classList.remove('hidden');
   document.getElementById('resultContent').classList.remove('visible');
-  ['f_name','f_kg','f_em','f_weather','f_economic','f_geo','f_tech'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('resultEmpty').classList.remove('hidden');
+  document.getElementById('f_name').value = '';
+  document.getElementById('f_category').value = '';
+  document.getElementById('f_kg').value = '';
+  document.getElementById('f_em').value = '';
   document.getElementById('f_twitter').value = '0';
+  document.getElementById('f_weather').value = '0';
+  document.getElementById('f_economic').value = '0';
+  document.getElementById('f_geo').value = '0';
+  document.getElementById('f_tech').value = '0';
+  document.querySelectorAll('.form-card input').forEach(el => el.classList.remove('input-ok', 'input-error'));
 }
+
+// Window Onload triggers
+window.onload = function() {
+  initDashboardTable();
+};
 </script>
 </body>
 </html>

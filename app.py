@@ -1,6 +1,7 @@
 # ============================================================
 #   Supply Chain Disruption Alerts — Flask Backend
 #   Phase 6 : Connects Two-Stage ML Pipeline to the UI
+#   with Automated Backup Supplier Matching System
 # ============================================================
 
 from flask import Flask, request, jsonify, render_template
@@ -8,14 +9,15 @@ import pandas as pd
 import numpy as np
 import pickle
 import os
+import csv
 
 app = Flask(__name__)
 
 # GLOBAL ARCHITECTURAL TUNING
-CUSTOM_THRESHOLD = 45.0  # Matches your optimized decision boundary
+CUSTOM_THRESHOLD = 65.0  # Matches your optimized decision boundary
 
 # ============================================================
-# Load Models, Scaler, and Metadata at Startup
+# Load Models, Scaler, Metadata, and Supplier DB at Startup
 # ============================================================
 print("\n⚙️ Loading Machine Learning Pipeline Components...")
 
@@ -31,11 +33,20 @@ with open('scaler.pkl', 'rb') as f:
 with open('model_info.pkl', 'rb') as f:
     model_info = pickle.load(f)
 
-print(f"   ✅ Classifier Loaded : {model_info['name']}")
-print(f"   ✅ Regressor Loaded  : XGBoost Regressor (Severity Engine)")
-print(f"   ✅ Input Scaler Loaded")
+print(f"    ✅ Classifier Loaded : {model_info['name']}")
+print(f"    ✅ Regressor Loaded  : XGBoost Regressor (Severity Engine)")
+print(f"    ✅ Input Scaler Loaded")
 
-# FIX: Removed 'downtime_hours' from inputs.
+# Load static backup supplier database
+SUPPLIERDB = []
+try:
+    with open('supplierDB.csv', 'r') as f:
+        reader = csv.DictReader(f)
+        SUPPLIERS_DB = list(reader)
+    print(f"    ✅ Supplier DB loaded: {len(SUPPLIERDB)} suppliers")
+except Exception as e:
+    print(f"    ⚠️  Supplier DB not found: {e}")
+
 FEATURE_COLS = [
     'kg_score', 'Em_Score', 'twitter_alert', 'weather_risk',
     'economic_risk', 'geo_risk', 'tech_risk'
@@ -102,6 +113,37 @@ def predict():
             # Cleared suppliers automatically receive zero downtime
             predicted_downtime = 0.0
 
+        # ── AUTOMATED BACKUP SUPPLIER MATCHING SYSTEM ────────
+        backup_list = []
+        if is_disruption == 1:
+            supplier_name = data.get('supplier_name', '').strip()
+            supplier_cat  = data.get('category', '').strip()
+
+            if supplier_name or supplier_cat:
+                # If supplier name given, look up its category from the database
+                if supplier_name:
+                    match = next(
+                        (s for s in SUPPLIERS_DB 
+                         if s['supplier_name'].lower() == supplier_name.lower()),
+                        None
+                    )
+                    if match:
+                        supplier_cat = match['category']
+
+                # Fetch and filter top 3 backup options based on highest quality rating
+                if supplier_cat:
+                    backups = [
+                        s for s in SUPPLIERS_DB
+                        if s['category'].lower() == supplier_cat.lower()
+                        and s['status'] == 'Backup'
+                    ]
+                    backups = sorted(
+                        backups,
+                        key=lambda x: float(x['quality_rating']),
+                        reverse=True
+                    )
+                    backup_list = backups[:3]
+
         # ── SAFE FEATURE IMPORTANCE EXTRACTION ───────────────
         try:
             if hasattr(classifier, 'calibrated_classifiers_'):
@@ -131,7 +173,8 @@ def predict():
             'prediction'              : risk_level,
             'is_disruption'           : is_disruption,
             'predicted_downtime_hours': predicted_downtime,
-            'factors'                 : factors
+            'factors'                 : factors,
+            'backup_suppliers'        : backup_list
         })
 
     except Exception as e:
@@ -139,7 +182,81 @@ def predict():
 
 
 # ============================================================
-# ROUTE 2 — Batch Prediction (Multiple Suppliers)
+# ROUTE 2 — Get Backup Suppliers Manually (API Query Engine)
+# ============================================================
+@app.route('/backup_suppliers', methods=['GET'])
+def backup_suppliers():
+    """
+    Returns backup suppliers for a given supplier name or category.
+    Usage: /backup_suppliers?supplier=Apex Textiles
+           /backup_suppliers?category=Fabric
+    """
+    try:
+        supplier_name = request.args.get('supplier', '').strip()
+        category      = request.args.get('category', '').strip()
+
+        if not supplier_name and not category:
+            return jsonify({'error': 'Provide supplier name or category'}), 400
+
+        if supplier_name:
+            match = next(
+                (s for s in SUPPLIERDB
+                 if s['supplier_name'].lower() == supplier_name.lower()),
+                None
+            )
+            if match:
+                category = match['category']
+            else:
+                return jsonify({
+                    'error': f'Supplier "{supplier_name}" not found in database'
+                }), 404
+
+        backups = [
+            s for s in SUPPLIERDB
+            if s['category'].lower() == category.lower()
+            and s['status'] == 'Backup'
+        ]
+
+        if not backups:
+            return jsonify({
+                'message' : f'No backup suppliers found for category: {category}',
+                'category': category,
+                'backups' : []
+            })
+
+        backups = sorted(
+            backups,
+            key=lambda x: float(x['quality_rating']),
+            reverse=True
+        )
+
+        return jsonify({
+            'at_risk_supplier': supplier_name,
+            'category'        : category,
+            'backup_count'    : len(backups),
+            'backups'         : backups
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# ROUTE 3 — Get All Suppliers List
+# ============================================================
+@app.route('/all_suppliers', methods=['GET'])
+def all_suppliers():
+    try:
+        return jsonify({
+            'total'    : len(SUPPLIERDB),
+            'suppliers': SUPPLIERDB
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# ROUTE 4 — Batch Prediction (Multiple Suppliers)
 # ============================================================
 @app.route('/predict_batch', methods=['POST'])
 def predict_batch():
@@ -171,7 +288,7 @@ def predict_batch():
                 risk_level         = 'High Risk'
                 raw_dt             = regressor.predict(input_scaled)[0]
                 predicted_downtime = round(max(0.0, float(raw_dt)), 1)
-            elif risk_score >= CUSTOM_THRESHOLD:
+            elif risk_score >= 45:
                 risk_level         = 'Medium Risk'
                 predicted_downtime = 0.0
             else:
@@ -192,7 +309,7 @@ def predict_batch():
 
 
 # ============================================================
-# ROUTE 3 — Model Info
+# ROUTE 5 — Model Info
 # ============================================================
 @app.route('/model_info', methods=['GET'])
 def get_model_info():
