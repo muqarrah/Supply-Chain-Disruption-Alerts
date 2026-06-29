@@ -363,8 +363,8 @@ for i in range(min(15, len(risk_scores))):
     actual    = 'High Risk' if y_test.iloc[i] == 1 else 'Low Risk'
     match     = '✅ Correct' if y_pred[i] == y_test.iloc[i] else '❌ Wrong'
 
-    if   score >= 45: level = '🔴 CRITICAL'
-    elif score >= 25: level = '🟡 MEDIUM'
+    if   score >= 70: level = '🔴 CRITICAL'
+    elif score >= 45: level = '🟡 MEDIUM'
     else:             level = '🟢 LOW'
 
     print(f"  {i+1:<5} {score:>7.1f}/100  {level:<16} {predicted:<12} {actual:<12} {match}")

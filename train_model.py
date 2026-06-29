@@ -83,38 +83,33 @@ print(f"   Features     : {list(X_train_balanced.columns)}")
 # ============================================================
 print("\n🤖 STEP 2 — Defining 4 Models...")
 
-from sklearn.calibration import CalibratedClassifierCV
-from xgboost import XGBClassifier
-
-# 1. Initialize the base XGBoost model
-xgb_base = XGBClassifier(
-    n_estimators=100,
-    max_depth=5,
-    learning_rate=0.1,
-    random_state=42,
-    eval_metric='logloss',
-    verbosity=0
-)
 
 # 2. Define the unified models dictionary cleanly
 models = {
     'Logistic Regression': LogisticRegression(
         max_iter=1000,
+        C=0.5,              # regularization — prevents overfit
         random_state=42
     ),
     'Decision Tree': DecisionTreeClassifier(
-        max_depth=6,
+        max_depth=4,        # shallow tree — prevents overfit
         random_state=42
     ),
     'Random Forest': RandomForestClassifier(
         n_estimators=100,
-        max_depth=8,
+        max_depth=5,        # controlled depth
+        min_samples_leaf=5, # needs 5 samples minimum per leaf
         random_state=42
     ),
-    'XGBoost': CalibratedClassifierCV(
-        estimator=xgb_base,
-        cv=5,
-        method='isotonic'
+    'XGBoost': XGBClassifier(
+        n_estimators=80,
+        max_depth=3,        # shallow — most important setting
+        learning_rate=0.05, # slow learning = better generalization
+        subsample=0.8,      # uses 80% of data per tree
+        colsample_bytree=0.8,
+        random_state=42,
+        eval_metric='logloss',
+        verbosity=0
     )
 }
 
@@ -337,9 +332,9 @@ print("   " + "─" * 52)
 for i in range(min(10, len(risk_scores))):
     score  = risk_scores[i]
     actual = 'High Risk' if y_test.iloc[i] == 1 else 'Low Risk'
-    if score >= 45:
+    if score >= 70:
         level = '🔴 HIGH RISK'
-    elif score >= 25:
+    elif score >= 45:
         level = '🟡 MEDIUM RISK'
     else:
         level = '🟢 LOW RISK'

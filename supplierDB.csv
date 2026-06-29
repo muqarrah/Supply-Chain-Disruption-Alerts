@@ -1,0 +1,16 @@
+supplier_id,supplier_name,category,region,lead_time_days,quality_rating,price_level,contact_email,status
+SUP001,Apex Textiles,Fabric,Asia,14,4.2,Medium,apex@supply.com,Primary
+SUP002,NordFabrics GmbH,Fabric,Europe,7,4.8,High,nord@supply.com,Backup
+SUP003,SilkRoute Co,Fabric,Asia,18,3.9,Low,silk@supply.com,Primary
+SUP004,TextilePro Ltd,Fabric,North America,10,4.5,High,tpro@supply.com,Backup
+SUP005,Delta Electronics,Electronics,Asia,12,4.1,Medium,delta@supply.com,Primary
+SUP006,TechParts GmbH,Electronics,Europe,8,4.7,High,tech@supply.com,Backup
+SUP007,CircuitBase Inc,Electronics,North America,9,4.6,Medium,circuit@supply.com,Backup
+SUP008,Gulf Components,Electronics,Middle East,15,3.8,Low,gulf@supply.com,Primary
+SUP009,BrazosChem,Chemicals,South America,12,4.0,Medium,brazos@supply.com,Primary
+SUP010,EuroChem AG,Chemicals,Europe,6,4.9,High,euro@supply.com,Backup
+SUP011,AsianChem Ltd,Chemicals,Asia,10,4.3,Medium,asian@supply.com,Backup
+SUP012,Pacific Materials,Raw Materials,Asia,8,4.4,Medium,pacific@supply.com,Primary
+SUP013,NordRaw GmbH,Raw Materials,Europe,5,4.7,High,nordraw@supply.com,Backup
+SUP014,AmeriMat Corp,Raw Materials,North America,7,4.5,Medium,amerimat@supply.com,Backup
+SUP015,FinTech Supply,Logistics,Europe,5,4.8,High,fintech@supply.com,Primary

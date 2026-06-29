@@ -68,13 +68,13 @@ print("\n🏷️  STEP 3 — Creating Label Column...")
 #   0 = Low Risk   (probability <  0.5)
 
 # FIX: We use our saved target variable here since high_disruption_p was dropped from df
-df['disruption'] = (y_high_disruption_p >= 0.45).astype(int)
+df['disruption'] = (y_high_disruption_p >= 0.65).astype(int)
 
 low  = (df['disruption'] == 0).sum()
 high = (df['disruption'] == 1).sum()
 
 print(f"    ✅ Label 'disruption' created from 'high_disruption_p'")
-print(f"    Threshold : >= 0.45 = High Risk (1)")
+print(f"    Threshold : >= 0.65 = High Risk (1)")
 print(f"    Low Risk  (0) : {low}  records  ({low/len(df)*100:.1f}%)")
 print(f"    High Risk (1) : {high} records  ({high/len(df)*100:.1f}%)")
 

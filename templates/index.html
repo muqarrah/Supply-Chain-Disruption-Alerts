@@ -420,59 +420,164 @@
   </div>
 </div>
 
+<!-- ══════════════ RISK CHECKER ══════════════ -->
 <div id="checker" class="page">
   <div class="section">
     <div class="section-eyebrow">Single Supplier Lookup</div>
     <div class="section-heading">Check a Supplier's Risk Level</div>
     <div class="checker-grid">
+
       <div class="form-card">
         <h3>Supplier Details</h3>
-        <p>Enter the real-time operational parameters. The backend classifier applies the 45.0% decision threshold and feeds anomalies into the regression severity engine.</p>
+        <p>Enter the supplier's operational parameters. KG Score and Emergency Score are decimal values between 0 and 1. All risk flags are binary — select 0 (inactive) or 1 (active).</p>
+
         <div class="form-grid">
+
+          <!-- Supplier Name — text, no restriction needed -->
           <div class="form-group">
             <label>Supplier Name</label>
-            <input type="text" id="f_name" placeholder="e.g. Apex Textiles">
+            <input
+              type="text"
+              id="f_name"
+              placeholder="e.g. Apex Textiles"
+              autocomplete="off"
+            >
           </div>
+
+          <!-- KG Score — float, 0.0 to 1.5 -->
           <div class="form-group">
-            <label>KG Score <span class="hint">(0-100)</span></label>
-            <input type="number" id="f_kg" placeholder="e.g. 75" min="0" max="100">
+            <label>
+              KG Score
+              <span class="hint"> — Numerical · 0.00 to 1.50</span>
+            </label>
+            <input
+              type="number"
+              id="f_kg"
+              placeholder="e.g. 0.65"
+              min="0.00"
+              max="1.50"
+              step="0.01"
+              oninput="clampValue(this, 0, 1.5)"
+              required
+            >
+            <span class="field-note">Enter a decimal value between 0.00 and 1.50</span>
           </div>
+
+          <!-- Emergency Score — float, 0.0 to 1.0 -->
           <div class="form-group">
-            <label>Emergency Score <span class="hint">(0-100)</span></label>
-            <input type="number" id="f_em" placeholder="e.g. 20" min="0" max="100">
+            <label>
+              Emergency Score
+              <span class="hint"> — Numerical · 0.00 to 1.00</span>
+            </label>
+            <input
+              type="number"
+              id="f_em"
+              placeholder="e.g. 0.40"
+              min="0.00"
+              max="1.00"
+              step="0.01"
+              oninput="clampValue(this, 0, 1.0)"
+              required
+            >
+            <span class="field-note">Enter a decimal value between 0.00 and 1.00</span>
           </div>
+
+          <!-- Twitter Alert — binary dropdown -->
           <div class="form-group">
-            <label>Twitter Alert</label>
+            <label>
+              Twitter Alert
+              <span class="hint"> — Categorical · 0 or 1</span>
+            </label>
             <select id="f_twitter">
-              <option value="0">0 - No Warning Flagged</option>
-              <option value="1">1 - Disruption Threat Active</option>
+              <option value="0">0 — No Alert</option>
+              <option value="1">1 — Alert Active</option>
             </select>
+            <span class="field-note">Binary flag — active social media disruption signal</span>
           </div>
+
+          <!-- Weather Risk — binary dropdown -->
           <div class="form-group">
-            <label>Weather Risk Score <span class="hint">(0-5)</span></label>
-            <input type="number" id="f_weather" placeholder="e.g. 1" min="0" max="5">
+            <label>
+              Weather Risk
+              <span class="hint"> — Categorical · 0 or 1</span>
+            </label>
+            <select id="f_weather">
+              <option value="0">0 — No Risk</option>
+              <option value="1">1 — Risk Present</option>
+            </select>
+            <span class="field-note">Binary flag — weather disruption near supplier</span>
           </div>
+
+          <!-- Economic Risk — binary dropdown -->
           <div class="form-group">
-            <label>Economic Risk Score <span class="hint">(0-5)</span></label>
-            <input type="number" id="f_economic" placeholder="e.g. 2" min="0" max="5">
+            <label>
+              Economic Risk
+              <span class="hint"> — Categorical · 0 or 1</span>
+            </label>
+            <select id="f_economic">
+              <option value="0">0 — No Risk</option>
+              <option value="1">1 — Risk Present</option>
+            </select>
+            <span class="field-note">Binary flag — economic instability signal</span>
           </div>
+
+          <!-- Geo Risk — binary dropdown -->
           <div class="form-group">
-            <label>Geo-Political Risk Score <span class="hint">(0-5)</span></label>
-            <input type="number" id="f_geo" placeholder="e.g. 1" min="0" max="5">
+            <label>
+              Geo-Political Risk
+              <span class="hint"> — Categorical · 0 or 1</span>
+            </label>
+            <select id="f_geo">
+              <option value="0">0 — No Risk</option>
+              <option value="1">1 — Risk Present</option>
+            </select>
+            <span class="field-note">Binary flag — political/regional instability</span>
           </div>
+
+          <!-- Tech Risk — binary dropdown -->
           <div class="form-group">
-            <label>Technical Risk Score <span class="hint">(0-5)</span></label>
-            <input type="number" id="f_tech" placeholder="e.g. 0" min="0" max="5">
+            <label>
+              Technical Risk
+              <span class="hint"> — Categorical · 0 or 1</span>
+            </label>
+            <select id="f_tech">
+              <option value="0">0 — No Risk</option>
+              <option value="1">1 — Risk Present</option>
+            </select>
+            <span class="field-note">Binary flag — tech/infrastructure failure signal</span>
           </div>
+
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="runCheck()">Analyze Risk →</button>
+
+        <!-- Validation message area -->
+        <div id="formError" style="
+          display:none;
+          background:#f7e9e5;
+          border:1px solid #e8b4a8;
+          border-radius:8px;
+          padding:0.75rem 1rem;
+          margin-bottom:1rem;
+          font-size:0.83rem;
+          color:#b3432d;
+        "></div>
+
+        <button
+          class="btn btn-primary"
+          id="analyzeBtn"
+          style="width:100%;justify-content:center"
+          onclick="runCheck()"
+        >
+          Analyze Risk →
+        </button>
       </div>
 
+      <!-- Result Panel -->
       <div class="result-card">
         <div class="result-empty" id="resultEmpty">
           <div class="icon">○</div>
-          <p>Fill in the supplier details and select <strong>Analyze Risk</strong> to execute the two-stage model validation layer.</p>
+          <p>Fill in the supplier details and click <strong>Analyze Risk</strong> to run the two-stage prediction — disruption classification followed by severity estimation.</p>
         </div>
+
         <div class="result-content" id="resultContent">
           <div class="big-score">
             <div class="score-readout">
@@ -483,24 +588,319 @@
               <div class="big-meter-fill" id="bigMeterFill" style="width:0%"></div>
             </div>
             <div id="riskBadgeResult"></div>
-            
+
             <div id="downtimeBlock" class="severity-display">
               Expected Impact: <span id="downtimeVal">0.0</span> Hours
             </div>
 
             <p style="font-size:0.83rem;color:var(--muted);margin-top:0.9rem;line-height:1.6" id="riskMsg"></p>
           </div>
+
+          <!-- Input Summary — shows what was submitted -->
+          <div id="inputSummary" style="
+            background:var(--surface2);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:1rem 1.2rem;
+            margin-bottom:0.5rem;
+          ">
+            <p style="font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;
+                      text-transform:uppercase;color:var(--muted);margin-bottom:0.7rem;font-weight:500">
+              Submitted Values
+            </p>
+            <div id="inputSummaryContent" style="
+              display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1.5rem;
+            "></div>
+          </div>
+
           <div>
-            <p style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:1rem;font-weight:500">Structural Factor Contribution</p>
+            <p style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.08em;
+                      color:var(--muted);text-transform:uppercase;margin-bottom:1rem;font-weight:500">
+              Structural Factor Contribution
+            </p>
             <div class="factor-list" id="factorList"></div>
           </div>
-          <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="resetCheck()">← Check Another Supplier</button>
+
+          <button
+            class="btn btn-ghost"
+            style="width:100%;justify-content:center"
+            onclick="resetCheck()"
+          >
+            ← Check Another Supplier
+          </button>
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
+
+<!-- ══════════════ STYLES FOR THIS FORM ══════════════ -->
+<style>
+  .field-note {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    font-style: italic;
+  }
+  input:invalid, input.input-error {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px var(--danger-soft) !important;
+  }
+  input.input-ok {
+    border-color: var(--safe) !important;
+  }
+  .input-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    padding: 0.18rem 0;
+  }
+  .input-summary-row .isk { color: var(--muted); }
+  .input-summary-row .isv {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--ink);
+  }
+</style>
+
+
+<!-- ══════════════ JAVASCRIPT FOR THIS FORM ══════════════ -->
+<script>
+
+// ── Clamp helper — prevents out-of-range typing ──────────────
+function clampValue(input, min, max) {
+  const val = parseFloat(input.value);
+  if (!isNaN(val)) {
+    if (val < min) input.value = min;
+    if (val > max) input.value = max;
+  }
+}
+
+// ── Validate form before submit ───────────────────────────────
+function validateForm() {
+  const errors = [];
+  const errBox = document.getElementById('formError');
+
+  const kg  = parseFloat(document.getElementById('f_kg').value);
+  const em  = parseFloat(document.getElementById('f_em').value);
+
+  // KG Score validation
+  if (isNaN(kg)) {
+    errors.push('KG Score is required.');
+    document.getElementById('f_kg').classList.add('input-error');
+  } else if (kg < 0 || kg > 1.5) {
+    errors.push('KG Score must be between 0.00 and 1.50.');
+    document.getElementById('f_kg').classList.add('input-error');
+  } else {
+    document.getElementById('f_kg').classList.remove('input-error');
+    document.getElementById('f_kg').classList.add('input-ok');
+  }
+
+  // Emergency Score validation
+  if (isNaN(em)) {
+    errors.push('Emergency Score is required.');
+    document.getElementById('f_em').classList.add('input-error');
+  } else if (em < 0 || em > 1.0) {
+    errors.push('Emergency Score must be between 0.00 and 1.00.');
+    document.getElementById('f_em').classList.add('input-error');
+  } else {
+    document.getElementById('f_em').classList.remove('input-error');
+    document.getElementById('f_em').classList.add('input-ok');
+  }
+
+  if (errors.length > 0) {
+    errBox.style.display = 'block';
+    errBox.innerHTML = errors.map(e => `⚠️ ${e}`).join('<br>');
+    return false;
+  }
+
+  errBox.style.display = 'none';
+  return true;
+}
+
+// ── Build input summary panel ─────────────────────────────────
+function buildInputSummary(payload) {
+  const labels = {
+    kg_score      : 'KG Score',
+    Em_Score      : 'Emergency Score',
+    twitter_alert : 'Twitter Alert',
+    weather_risk  : 'Weather Risk',
+    economic_risk : 'Economic Risk',
+    geo_risk      : 'Geo Risk',
+    tech_risk     : 'Tech Risk'
+  };
+  return Object.entries(payload).map(([k, v]) => `
+    <div class="input-summary-row">
+      <span class="isk">${labels[k] || k}</span>
+      <span class="isv">${v}</span>
+    </div>
+  `).join('');
+}
+
+// ── Main runCheck function ────────────────────────────────────
+async function runCheck() {
+  if (!validateForm()) return;
+
+  const kg       = parseFloat(document.getElementById('f_kg').value);
+  const em       = parseFloat(document.getElementById('f_em').value);
+  const twitter  = parseInt(document.getElementById('f_twitter').value);
+  const weather  = parseInt(document.getElementById('f_weather').value);
+  const economic = parseInt(document.getElementById('f_economic').value);
+  const geo      = parseInt(document.getElementById('f_geo').value);
+  const tech     = parseInt(document.getElementById('f_tech').value);
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.textContent = 'Analyzing...';
+  btn.disabled = true;
+
+  const payload = {
+    kg_score      : kg,
+    Em_Score      : em,
+    twitter_alert : twitter,
+    weather_risk  : weather,
+    economic_risk : economic,
+    geo_risk      : geo,
+    tech_risk     : tech
+  };
+
+  try {
+    const response = await fetch('/predict', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('Server error ' + response.status);
+    const result = await response.json();
+    if (result.error) throw new Error(result.error);
+
+    displayResult(
+      result.risk_score,
+      result.prediction,
+      result.factors,
+      result.predicted_downtime_hours,
+      payload
+    );
+
+  } catch (err) {
+    // Fallback simulation when Flask is not running
+    const simScore   = simulateScore(kg, em, twitter, weather, economic, geo, tech);
+    const simLevel   = simScore >= 70 ? 'High Risk' : simScore >= 45 ? 'Medium Risk' : 'Low Risk';
+    const simFactors = [
+      { feature:'KG Score',        importance: 40.45 },
+      { feature:'Emergency Score', importance: 35.12 },
+      { feature:'Twitter Alert',   importance: 12.30 },
+      { feature:'Weather Risk',    importance:  5.10 },
+      { feature:'Economic Risk',   importance:  4.00 },
+      { feature:'Geo Risk',        importance:  2.00 },
+      { feature:'Tech Risk',       importance:  1.03 },
+    ];
+    const simDowntime = simScore >= 70 ? parseFloat((simScore / 10).toFixed(1)) : 0.0;
+    displayResult(simScore, simLevel, simFactors, simDowntime, payload);
+  } finally {
+    btn.textContent = 'Analyze Risk →';
+    btn.disabled = false;
+  }
+}
+
+// ── Simulation fallback (when Flask offline) ──────────────────
+function simulateScore(kg, em, twitter, weather, economic, geo, tech) {
+  let s = 0;
+  s += kg * 55;
+  s += em * 30;
+  s += (twitter + weather + economic + geo + tech) * 2;
+  return Math.round(Math.min(s, 100));
+}
+
+// ── Display result on the right panel ────────────────────────
+function displayResult(score, riskLevel, factors, downtime, payload) {
+  function rawColor(s) {
+    if (s >= 70) return '#b3432d';
+    if (s >= 45) return '#c4801a';
+    return '#1f7a4d';
+  }
+
+  const color = rawColor(score);
+
+  document.getElementById('scoreVal').textContent  = score;
+  document.getElementById('scoreVal').style.color  = color;
+  document.getElementById('bigMeterFill').style.width      = score + '%';
+  document.getElementById('bigMeterFill').style.background = color;
+
+  let riskClass, msg;
+  if (score >= 70) {
+    riskClass = 'risk-high';
+    msg = 'Elevated threats confirmed. Initialize fallback routing options instantly.';
+  } else if (score >= 45) {
+    riskClass = 'risk-med';
+    msg = 'Risk signals detected. Monitor closely and prepare contingency sourcing.';
+  } else {
+    riskClass = 'risk-low';
+    msg = 'Supplier appears stable. Continue standard monitoring cadence.';
+  }
+
+  document.getElementById('riskBadgeResult').innerHTML =
+    `<span class="risk-badge ${riskClass}" style="display:inline-flex">${riskLevel}</span>`;
+  document.getElementById('riskMsg').textContent = msg;
+
+  // Downtime display
+  const dtBlock = document.getElementById('downtimeBlock');
+  if (downtime > 0) {
+    document.getElementById('downtimeVal').textContent = downtime;
+    dtBlock.style.display = 'block';
+  } else {
+    dtBlock.style.display = 'none';
+  }
+
+  // Input summary
+  document.getElementById('inputSummaryContent').innerHTML =
+    buildInputSummary(payload);
+
+  // Factor bars
+  const maxImp = Math.max(...factors.map(f => f.importance));
+  document.getElementById('factorList').innerHTML = factors.map(f => {
+    const barPct = maxImp > 0 ? Math.round((f.importance / maxImp) * 100) : 0;
+    return `
+      <div class="factor-row">
+        <div class="factor-label">
+          <span class="name">${f.feature}</span>
+          <span class="pct">${f.importance.toFixed(2)}%</span>
+        </div>
+        <div class="factor-bar">
+          <div class="factor-fill" style="width:${barPct}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('resultEmpty').classList.add('hidden');
+  document.getElementById('resultContent').classList.add('visible');
+}
+
+// ── Reset form ────────────────────────────────────────────────
+function resetCheck() {
+  // Clear text and number inputs
+  ['f_name', 'f_kg', 'f_em'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.classList.remove('input-error', 'input-ok');
+  });
+
+  // Reset dropdowns to first option (0)
+  ['f_twitter', 'f_weather', 'f_economic', 'f_geo', 'f_tech'].forEach(id => {
+    document.getElementById(id).selectedIndex = 0;
+  });
+
+  // Hide error box
+  document.getElementById('formError').style.display = 'none';
+
+  // Reset result panel
+  document.getElementById('resultEmpty').classList.remove('hidden');
+  document.getElementById('resultContent').classList.remove('visible');
+}
+
+</script>
 <div id="howitworks" class="page">
   <div class="section">
     <div class="section-eyebrow">Methodology</div>

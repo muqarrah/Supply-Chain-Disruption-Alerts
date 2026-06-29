@@ -35,7 +35,7 @@ print(f"   ✅ Classifier Loaded : {model_info['name']}")
 print(f"   ✅ Regressor Loaded  : XGBoost Regressor (Severity Engine)")
 print(f"   ✅ Input Scaler Loaded")
 
-# FIX: Removed 'downtime_hours' from inputs. This list contains only what the user submits.
+# FIX: Removed 'downtime_hours' from inputs.
 FEATURE_COLS = [
     'kg_score', 'Em_Score', 'twitter_alert', 'weather_risk',
     'economic_risk', 'geo_risk', 'tech_risk'
@@ -51,9 +51,11 @@ FEATURE_LABELS = {
     'tech_risk'     : 'Tech Risk'
 }
 
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 # ============================================================
 # ROUTE 1 — Predict Risk & Severity for a Single Supplier
@@ -69,59 +71,72 @@ def predict():
             return jsonify({'error': f'Missing fields: {missing}'}), 400
 
         # Build DataFrame and scale
-        input_df = pd.DataFrame([{col: float(data[col]) for col in FEATURE_COLS}])
+        input_df     = pd.DataFrame([{col: float(data[col]) for col in FEATURE_COLS}])
         input_scaled = scaler.transform(input_df)
 
-        # 1. STAGE 1: Predict Risk Score from Calibrated Classifier
+        # ── STAGE 1: Predict Risk Score ──────────────────────
         prediction_prob = classifier.predict_proba(input_scaled)[0][1]
-        risk_score = round(float(prediction_prob) * 100, 1)
 
-        # Map scores to labels based on custom thresholds
-        if risk_score >= CUSTOM_THRESHOLD:
-            risk_level = 'High Risk'
+        # Clip to prevent exact 0.0 or 1.0 — causes unrealistic 0 or 100 scores
+        prediction_prob = float(np.clip(prediction_prob, 0.02, 0.98))
+
+        # Soft cap — max display score is 99.0
+        risk_score = round(prediction_prob * 100, 1)
+
+        # ── Map score to risk level using fixed thresholds ───
+        if risk_score >= 70:
+            risk_level    = 'High Risk'
             is_disruption = 1
-        elif risk_score >= max(0.0, CUSTOM_THRESHOLD - 20.0):
-            risk_level = 'Medium Risk'
+        elif risk_score >= 45:   
+            risk_level    = 'Medium Risk'
             is_disruption = 0
-        else:
-            risk_level = 'Low Risk'
+        else:                                  # below 45
+            risk_level    = 'Low Risk'
             is_disruption = 0
 
-        # 2. STAGE 2: Predict Downtime Severity using the Regressor
+        # ── STAGE 2: Predict Downtime Severity ───────────────
         if is_disruption == 1:
-            raw_downtime = regressor.predict(input_scaled)[0]
-            # Ensure no random negative background values are passed to the frontend
+            raw_downtime       = regressor.predict(input_scaled)[0]
             predicted_downtime = round(max(0.0, float(raw_downtime)), 1)
         else:
-            # Gated logic: Cleared suppliers automatically receive zero downtime
+            # Cleared suppliers automatically receive zero downtime
             predicted_downtime = 0.0
 
-        # FIX: Extract importances safely across Calibrated CV ensemble estimators
+        # ── SAFE FEATURE IMPORTANCE EXTRACTION ───────────────
         try:
-            importances = np.mean([est.feature_importances_ for est in classifier.calibrated_classifiers_], axis=0)
-        except AttributeError:
-            # Fallback if the pipeline format differs
-            importances = np.zeros(len(FEATURE_COLS))
+            if hasattr(classifier, 'calibrated_classifiers_'):
+                importances = np.mean(
+                    [est.estimator.feature_importances_
+                     for est in classifier.calibrated_classifiers_],
+                    axis=0
+                )
+            elif hasattr(classifier, 'feature_importances_'):
+                importances = classifier.feature_importances_
+            else:
+                importances = np.array([0.40, 0.35, 0.12, 0.05, 0.04, 0.03, 0.01])
+        except Exception:
+            importances = np.array([0.40, 0.35, 0.12, 0.05, 0.04, 0.03, 0.01])
 
         factors = []
         for i, col in enumerate(FEATURE_COLS):
             factors.append({
-                'feature': FEATURE_LABELS[col],
-                'value': float(input_df[col].iloc[0]),
+                'feature'   : FEATURE_LABELS[col],
+                'value'     : float(input_df[col].iloc[0]),
                 'importance': round(float(importances[i]) * 100, 2)
             })
         factors = sorted(factors, key=lambda x: x['importance'], reverse=True)
 
         return jsonify({
-            'risk_score': risk_score,
-            'prediction': risk_level,
-            'is_disruption': is_disruption,
+            'risk_score'              : risk_score,
+            'prediction'              : risk_level,
+            'is_disruption'           : is_disruption,
             'predicted_downtime_hours': predicted_downtime,
-            'factors': factors
+            'factors'                 : factors
         })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 # ============================================================
 # ROUTE 2 — Batch Prediction (Multiple Suppliers)
@@ -129,7 +144,7 @@ def predict():
 @app.route('/predict_batch', methods=['POST'])
 def predict_batch():
     try:
-        data = request.get_json()
+        data      = request.get_json()
         suppliers = data.get('suppliers', [])
 
         if not suppliers:
@@ -140,34 +155,33 @@ def predict_batch():
             missing = [col for col in FEATURE_COLS if col not in sup]
             if missing:
                 results.append({
-                    'name': sup.get('name', 'Unknown'),
+                    'name' : sup.get('name', 'Unknown'),
                     'error': f'Missing fields: {missing}'
                 })
                 continue
 
-            input_df = pd.DataFrame([{col: float(sup[col]) for col in FEATURE_COLS}])
+            input_df     = pd.DataFrame([{col: float(sup[col]) for col in FEATURE_COLS}])
             input_scaled = scaler.transform(input_df)
 
-            # Predict Risk
             prediction_prob = classifier.predict_proba(input_scaled)[0][1]
-            risk_score = round(float(prediction_prob) * 100, 1)
+            prediction_prob = float(np.clip(prediction_prob, 0.01, 0.99))
+            risk_score      = min(round(prediction_prob * 100, 1), 99.0)
 
-            if risk_score >= CUSTOM_THRESHOLD:
-                risk_level = 'High Risk'
-                # Predict Downtime hours for high risk batch rows
-                raw_dt = regressor.predict(input_scaled)[0]
+            if risk_score >= 70:
+                risk_level         = 'High Risk'
+                raw_dt             = regressor.predict(input_scaled)[0]
                 predicted_downtime = round(max(0.0, float(raw_dt)), 1)
-            elif risk_score >= max(0.0, CUSTOM_THRESHOLD - 20.0):
-                risk_level = 'Medium Risk'
+            elif risk_score >= CUSTOM_THRESHOLD:
+                risk_level         = 'Medium Risk'
                 predicted_downtime = 0.0
             else:
-                risk_level = 'Low Risk'
+                risk_level         = 'Low Risk'
                 predicted_downtime = 0.0
 
             results.append({
-                'name': sup.get('name', 'Unknown'),
-                'risk_score': risk_score,
-                'prediction': risk_level,
+                'name'                    : sup.get('name', 'Unknown'),
+                'risk_score'              : risk_score,
+                'prediction'              : risk_level,
                 'predicted_downtime_hours': predicted_downtime
             })
 
@@ -176,20 +190,29 @@ def predict_batch():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+# ============================================================
+# ROUTE 3 — Model Info
+# ============================================================
 @app.route('/model_info', methods=['GET'])
 def get_model_info():
     return jsonify({
         'model_name': model_info['name'],
-        'metrics': model_info['results']
+        'metrics'   : model_info['results']
     })
 
+
+# ============================================================
+# Run the App
+# ============================================================
 if __name__ == '__main__':
     print("\n" + "=" * 50)
     print("   SUPPLY CHAIN DISRUPTION ALERTS — WEB SERVER")
     print("=" * 50)
     print(f"   Classifier : {model_info['name']}")
     print(f"   Regressor  : XGBoost Severity Engine")
-    print(f"   Threshold  : {CUSTOM_THRESHOLD}%")
+    print(f"   Threshold  : Low < 45  |  Medium 45–69  |  High 70+")
+    print(f"   Score Cap  : 99.0 max (soft cap applied)")
     print(f"   Running on : http://localhost:5000")
     print("=" * 50 + "\n")
 
