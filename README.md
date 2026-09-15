@@ -5,7 +5,7 @@
 **SupplyGuard** is an end-to-end predictive risk-monitoring system designed to help supply chain managers identify potential supplier disruptions before they impact production.
 
 The system evaluates operational health metrics and environmental risk signals to generate a continuous **0–100 disruption risk score**, allowing procurement teams to move from reactive disruption management toward proactive risk monitoring.
---
+
 ## Live demo
 https://supply-chain-disruption-alerts-bsa4jwwtj-muqarrahs-projects.vercel.app/
 --
