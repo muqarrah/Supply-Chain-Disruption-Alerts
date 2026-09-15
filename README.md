@@ -8,7 +8,7 @@ The system evaluates operational health metrics and environmental risk signals t
 
 ## Live demo
 https://supply-chain-disruption-alerts-bsa4jwwtj-muqarrahs-projects.vercel.app/
---
+
 ## Dashboard
 
 ![SupplyGuard Dashboard](supply%20application.png)
