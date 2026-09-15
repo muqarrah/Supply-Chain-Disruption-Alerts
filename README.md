@@ -3,7 +3,9 @@
   <a href="https://supply-chain-disruption-alerts-bsa4jwwtj-muqarrahs-projects.vercel.app/">
     <strong>Live Demo</strong>
   </a>
-</p>![Workflow Diagram](workflow.jpeg)
+</p>
+
+![Workflow Diagram](workflow.jpeg)
 ## Overview
 
 **SupplyGuard** is an end-to-end predictive risk-monitoring system designed to help supply chain managers identify potential supplier disruptions before they impact production.
